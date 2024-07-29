@@ -10,18 +10,21 @@ class Pbkdf2 {
 
   Pbkdf2({required this.pepperFactory});
 
-  String hash(String password) {
-    final salt = _createSalt();
-    final derivator = _initDerivator(salt);
+  String hash(final String password, {final String? salt}) {
+    var saltData = _createSalt();
+    if (salt != null && salt.isNotEmpty) {
+      saltData = utf8.encode(salt);
+    }
+    final derivator = _initDerivator(saltData);
 
     final key = derivator.process(utf8.encode('${pepperFactory()}$password'));
-    final encodedSalt = base64.encode(salt);
+    final encodedSalt = base64.encode(saltData);
     final encodedKey = base64.encode(key);
 
     return '$encodedKey,$encodedSalt';
   }
 
-  bool verify(String password, String storedHashAndSalt) {
+  bool verify(final String password, final String storedHashAndSalt) {
     List<String> parts = storedHashAndSalt.split(',');
     if (parts.length != 2) return false;
 
